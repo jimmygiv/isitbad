@@ -7,6 +7,7 @@
 # Cached perform: ~.8s
 # Corrected, and improved by mr_sudo. Revision 2.1
 #Import default modules/constants----------------------------------------------------------------------------------------------#
+#new
 try:
   from sys import version,argv
   from argparse import ArgumentParser
