@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # Name:  IP checklist
-# Taken from: "isthisipbad.py" by Jerry Gamblin
 # REF: https://github.com/jgamblin/isthisipbad/blob/master/isthisipbad.py
-# isthisipbad.py: 16.425s
 # Imporvements: 2-8s
 # Cached perform: ~.8s
-# Corrected, and improved by mr_sudo. Revision 2.1
+# Corrected, and improved by mr_sudo. Revision 3.0
+#NEW: Updated feeds (3/15/2020), Threat scoring system base on threat feed source.
 #Import default modules/constants----------------------------------------------------------------------------------------------#
 #new
 try:
@@ -74,26 +73,28 @@ except:
   installer("certifi")
 #--------------------------------------------------------------------------------------------------------------------#
 #Print Results
-def printResults(answer, name):
+def printResults(answer, name, score):
   global GOOD
   global BAD
   if answer:
     print(colored('%s is listed in %s' % (badip, name), 'red'))
     BAD = BAD + 1
+    return (answer, score)
   else:
     print(colored('%s is not listed in %s' % (badip, name), 'green'))
     GOOD = GOOD + 1
-  return answer
+    return (answer, 0)
 #--------------------------------------------------------------------------------------------------------------------#
 #Fetch IP lists by vendor--------------------------------------------------------------------------------------------#
 
 def get_ipset(set):
   url = set.url
   name = set.name
+  score= set.score
   isCache = cacheDetct(name, cachedir)
   if isCache:
     answer = cacheReturn(url, name)
-    return printResults(answer, name)
+    return printResults(answer, name, score)
   try:
     request = http.request("GET", url)
     html_content = request.data.decode()
@@ -110,7 +111,7 @@ def get_ipset(set):
     cache(html_content, name)
   matches = findall(badip, html_content)
   answer = bool(len(matches))
-  return printResults(answer, name)
+  return printResults(answer, name, score)
 
 #--------------------------------------------------------------------------------------------------------------------#
 #Caching system -----------------------------------------------------------------------------------------------------#
@@ -133,7 +134,7 @@ def cacheReturn(url, name):
   f = open(fname, 'r')
   file = f.read()
   f.close()
-  matches = findall(badip, file)
+  matches = findall(sub('\.', '\.', badip), file)
   return bool(len(matches))
 
 def cache(html_content, name):
@@ -159,31 +160,37 @@ bls = (
   "t3direct.dnsbl.net.au", "tor.dnsbl.sectoor.de","torserver.tor.dnsbl.sectoor.de",
   "ubl.lashback.com","ubl.unsubscore.com", "virus.rbl.msrbl.net",
   "web.dnsbl.sorbs.net", "wormrbl.imp.ch", "xbl.spamhaus.org",
-  "zen.spamhaus.org", "zombie.dnsbl.sorbs.net")
+  "zen.spamhaus.org")
 
-URL = namedtuple('URL', 'url name')
+URL = namedtuple('URL', 'url name score')
 urls = (
-URL(url='http://iplists.firehol.org/files/et_tor.ipset', name='EmergingThreats TorNode'),
-URL(url='http://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt', name='EmergingThreats IP blocks'),
-URL(url='http://reputation.alienvault.com/reputation.data', name='AlienVault'),
-URL(url='http://www.nothink.org/blacklist/blacklist_malware_http.txt', name='NoThink Malware'),
-URL(url='http://www.nothink.org/blacklist/blacklist_ssh_all.txt', name='NoThink SSH'),
-URL(url='http://isc.sans.edu/api/sources/attacks/1000/limit=1000&sortby=lastseen', name='SANS DShield'),
-URL(url='http://malc0de.com/bl/IP_Blacklist.txt', name='malc0de'),
-URL(url='http://hosts-file.net/rss.asp', name='MalWareBytes'),
-URL(url='http://www.proxylists.net/proxylists.xml', name='Known proxies (proxylist)'),
-URL(url='http://labs.snort.org/feeds/ip-filter.blf', name='Snort IP filters'),
-URL(url='http://lists.blocklist.de/lists/apache.txt', name='Apache DDOS (blocklist.de)'),
-URL(url='http://lists.blocklist.de/lists/bots.txt', name='blocklist.de bot ips'),
-URL(url='http://lists.blocklist.de/lists/bruteforcelogin.txt', name='blocklist.de bruteforce ips'),
-URL(url='http://rules.emergingthreats.net/fwrules/emerging-PIX-CC.rules', name='Emerging Threats Bots'),
-URL(url='http://www.malwaredomainlist.com/hostslist/ip.txt', name='blocklist.de bruteforce ips')
+URL(url='http://blocklist.greensnow.co/greensnow.txt', name='Green Snow Bruteforcers', score=30),
+URL(url='https://openphish.com/feed.txt', name='Open Phish', score=15),
+URL(url='http://report.rutgers.edu/DROP/attackers', name='Rutgers Attackers IP List', score=50),
+URL(url='https://urlhaus.abuse.ch/downloads/text/', name='URLhaus malware IoC list', score=30),
+URL(url='http://rules.emergingthreats.net/blockrules/emerging-tor.rules', name='Emerging threats TorNode list', score=10),
+URL(url='https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-nodes.lst', name='SecOps TorNode list', score=10),
+URL(url='http://iplists.firehol.org/files/et_tor.ipset', name='FireHol TorNode', score=10),
+URL(url='http://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt', name='EmergingThreats IP blocks', score=30),
+URL(url='http://reputation.alienvault.com/reputation.data', name='AlienVault', score=30),
+URL(url='http://www.ciarmy.com/list/ci-badguys.txt', name='Collective Intel BadGuy List', score=50),
+URL(url='http://isc.sans.edu/api/sources/attacks/1000/limit=1000&sortby=lastseen', name='SANS DShield', score=30),
+URL(url='http://malc0de.com/bl/IP_Blacklist.txt', name='malc0de', score=30),
+URL(url='http://hosts-file.net/rss.asp', name='MalWareBytes', score=10),
+URL(url='http://www.proxylists.net/proxylists.xml', name='Known proxies (proxylist)', score=10),
+URL(url='http://labs.snort.org/feeds/ip-filter.blf', name='Snort IP filters', score=30),
+URL(url='http://lists.blocklist.de/lists/apache.txt', name='Apache DDOS (blocklist.de)', score=10),
+URL(url='http://lists.blocklist.de/lists/bots.txt', name='blocklist.de bot ips', score=10),
+URL(url='http://lists.blocklist.de/lists/bruteforcelogin.txt', name='blocklist.de bruteforce ips', score=30),
+URL(url='http://rules.emergingthreats.net/fwrules/emerging-PIX-CC.rules', name='Emerging Threats Bots', score=10),
+URL(url='http://www.malwaredomainlist.com/hostslist/ip.txt', name='blocklist.de bruteforce ips', score=30),
+URL(url='https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/blocklist_net_ua.ipset', name='firehol ipblock list', score=10)
 )
 #--------------------------------------------------------------------------------------------------------------------#
 #Grab Public IP------------------------------------------------------------------------------------------------------#
 def getPublicIP():
   try:
-    r = http.request("GET /", "http://icanhazip.com")
+    r = http.request("GET", "http://icanhazip.com")
     ip = r.data.decode()
     if ip:
       return ip.rstrip()
@@ -207,11 +214,11 @@ def dns_query(bl):
     answer_txt = my_resolver.query(query, "TXT")
     print(colored(badip + ' is listed in ' + bl, 'red') + ' (%s: %s)' % (answers[0], answer_txt[0]))
     BAD = BAD + 1
-    return True
+    return (True, 5)
   except:
       print (colored('%s is not listed in %s' % (badip,bl), 'green'))
       GOOD = GOOD + 1
-      return False
+      return (False, 0)
 
 #--------------------------------------------------------------------------------------------------------------------#
 #Run Main------------------------------------------------------------------------------------------------------------#
@@ -237,8 +244,18 @@ The FQDN for %s is %s\nGeolocation IP Information:\n%s
   pool = Pool(t)
   urlResult = pool.map(get_ipset, urls)
   dnsResult = pool.map(dns_query, bls)
-  RESULT = sum(int(x) for x in urlResult)
-  RESULT+= sum(int(x) for x in dnsResult)
+  RESULT = sum(int(x) for x,y in urlResult)
+  RESULT+= sum(int(x) for x,y in dnsResult)
+  THREAT_SCORE = sum(int(y) for x,y in urlResult)
+  THREAT_SCORE+= sum(int(y) for x,y in dnsResult)
+  if THREAT_SCORE >= 100:
+    THREAT_SCORE = 100
+  if THREAT_SCORE <= 0:
+    print(colored("\n\nPotentially not a threat. Score %s/100" % THREAT_SCORE, 'green'))
+  elif THREAT_SCORE > 0 and THREAT_SCORE < 40:
+    print(colored("\n\nWARNING: Suspicious IP. Threat %s/100" % THREAT_SCORE, 'red'))
+  elif THREAT_SCORE >= 40:
+    print(colored("\n\nWARNING: Malicious IP. Threat %s/100" % (THREAT_SCORE), 'red'))
   TOTAL = len(urls) + len(bls)
   print(colored('\n{0} is on {1}/{2} blacklists.\n'.format(badip, RESULT, TOTAL)))
   from py_compile import compile
