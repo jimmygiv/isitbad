@@ -176,7 +176,6 @@ URL(url='http://reputation.alienvault.com/reputation.data', name='AlienVault', s
 URL(url='http://www.ciarmy.com/list/ci-badguys.txt', name='Collective Intel BadGuy List', score=50),
 URL(url='http://isc.sans.edu/api/sources/attacks/1000/limit=1000&sortby=lastseen', name='SANS DShield', score=30),
 URL(url='http://malc0de.com/bl/IP_Blacklist.txt', name='malc0de', score=30),
-URL(url='http://hosts-file.net/rss.asp', name='MalWareBytes', score=10),
 URL(url='http://www.proxylists.net/proxylists.xml', name='Known proxies (proxylist)', score=10),
 URL(url='http://labs.snort.org/feeds/ip-filter.blf', name='Snort IP filters', score=30),
 URL(url='http://lists.blocklist.de/lists/apache.txt', name='Apache DDOS (blocklist.de)', score=10),
