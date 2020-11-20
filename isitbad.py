@@ -63,7 +63,8 @@ try:
 except:
   installer("ipaddress")
 try:
-  from urllib3 import PoolManager
+  from urllib3 import PoolManager,exceptions,disable_warnings
+  disable_warnings(exceptions.InsecureRequestWarning)
 except:
   installer("urllib3")
 try:
@@ -100,7 +101,7 @@ def get_ipset(set):
     html_content = request.data.decode()
   except:
     print("Could not connect to %s" % url)
-    return reults(False)
+    return printResults(False, name, score)
   if name == 'SANS DShield':
       print("[*] Regexing dsheild non-standard ip listing")
       html_content = sub(r'>00','>',html_content)
@@ -166,7 +167,7 @@ URL = namedtuple('URL', 'url name score')
 urls = (
 URL(url='http://blocklist.greensnow.co/greensnow.txt', name='Green Snow Bruteforcers', score=30),
 URL(url='https://openphish.com/feed.txt', name='Open Phish', score=15),
-URL(url='http://report.rutgers.edu/DROP/attackers', name='Rutgers Attackers IP List', score=50),
+URL(url='https://report.rutgers.edu/DROP/attackers', name='Rutgers Attackers IP List', score=50),
 URL(url='https://urlhaus.abuse.ch/downloads/text/', name='URLhaus malware IoC list', score=30),
 URL(url='http://rules.emergingthreats.net/blockrules/emerging-tor.rules', name='Emerging threats TorNode list', score=10),
 URL(url='https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-nodes.lst', name='SecOps TorNode list', score=10),
