@@ -29,7 +29,8 @@ Longitude: -82.0186
 68.68.68.68 is not listed in Emerging threats TorNode list
 68.68.68.68 is not listed in Rutgers Attackers IP List
 68.68.68.68 is not listed in EmergingThreats IP blocks
-68.68.68.68 is not listed in SecOps TorNode list68.68.68.68 is not listed in AlienVault
+68.68.68.68 is not listed in SecOps TorNode list
+68.68.68.68 is not listed in AlienVault
 68.68.68.68 is not listed in Green Snow Bruteforcers
 [*] Regexing dsheild non-standard ip listing
 68.68.68.68 is not listed in SANS DShield
