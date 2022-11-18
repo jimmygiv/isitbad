@@ -4,7 +4,7 @@
 # Imporvements: 2-8s
 # Cached perform: ~.8s
 # Corrected, and improved by mr_sudo. Revision 3.0
-#NEW: Updated feeds (3/15/2020), Threat scoring system base on threat feed source.
+#NEW: Feeds revalidated 11/18/2022, Threat scoring system base on threat feed source.
 #Import default modules/constants----------------------------------------------------------------------------------------------#
 #new
 try:
